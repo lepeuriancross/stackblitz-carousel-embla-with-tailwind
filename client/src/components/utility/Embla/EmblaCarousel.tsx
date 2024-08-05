@@ -5,16 +5,11 @@
 
 // 'use client // unguide for NextJS
 
-// Imports - types / config
-import type { EmblaCarouselType } from 'embla-carousel';
-
 // Imports - scripts (node)
 import {
 	Children,
 	Ref,
-	useState,
 	useEffect,
-	useCallback,
 	useImperativeHandle,
 	forwardRef,
 } from 'react';
@@ -23,6 +18,10 @@ import Fade from 'embla-carousel-fade';
 
 // Imports - scripts (local)
 import { classNames } from '../../../lib/utils';
+import {
+	usePrevNextButtons,
+	useDotButton,
+} from './_partials/EmblaCarouselHooks';
 
 // Types
 export type UsePrevNextButtonsType = {
@@ -46,6 +45,10 @@ export type EmblaCarouselProps = {
 	fade?: boolean;
 	className?: string;
 	children?: React.ReactNode;
+	onUpdatePrev?: (disabled: boolean) => void;
+	onUpdateNext?: (disabled: boolean) => void;
+	onUpdateIndex?: (index: number) => void;
+	onUpdateSnaps?: (scrollSnaps: number[]) => void;
 };
 export type EmblaCarouselSlideWrapperProps = {
 	isActive?: boolean;
@@ -59,87 +62,11 @@ export type EmblaCarouselArrowProps = {
 	onClick?: () => void;
 };
 export type EmblaCarouselDotProps = {
+	idx?: number;
 	isActive?: boolean;
 	disabled?: boolean;
 	className?: string;
 	onClick?: () => void;
-};
-
-// Hooks
-const usePrevNextButtons = (
-	emblaApi: EmblaCarouselType | undefined
-): UsePrevNextButtonsType => {
-	// Store
-	const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
-	const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
-
-	// Functions
-	const prev = useCallback(() => {
-		if (!emblaApi) return;
-		emblaApi.scrollPrev();
-	}, [emblaApi]);
-
-	const next = useCallback(() => {
-		if (!emblaApi) return;
-		emblaApi.scrollNext();
-	}, [emblaApi]);
-
-	const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
-		setPrevBtnDisabled(!emblaApi.canScrollPrev());
-		setNextBtnDisabled(!emblaApi.canScrollNext());
-	}, []);
-
-	// Effects
-	useEffect(() => {
-		if (!emblaApi) return;
-
-		onSelect(emblaApi);
-		emblaApi.on('reInit', onSelect).on('select', onSelect);
-	}, [emblaApi, onSelect]);
-
-	// Return hook
-	return {
-		prevBtnDisabled,
-		nextBtnDisabled,
-		prev,
-		next,
-	};
-};
-const useDotButton = (
-	emblaApi: EmblaCarouselType | undefined
-): UseDotButtonType => {
-	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-
-	const select = useCallback(
-		(index: number) => {
-			if (!emblaApi) return;
-			emblaApi.scrollTo(index);
-		},
-		[emblaApi]
-	);
-
-	const onInit = useCallback((emblaApi: EmblaCarouselType) => {
-		setScrollSnaps(emblaApi.scrollSnapList());
-	}, []);
-
-	const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
-		setSelectedIndex(emblaApi.selectedScrollSnap());
-	}, []);
-
-	useEffect(() => {
-		if (!emblaApi) return;
-
-		onInit(emblaApi);
-		onSelect(emblaApi);
-		emblaApi.on('reInit', onInit).on('reInit', onSelect).on('select', onSelect);
-	}, [emblaApi, onInit, onSelect]);
-
-	return {
-		selectedIndex,
-		scrollSnaps,
-		select,
-	};
 };
 
 // Component
@@ -155,6 +82,10 @@ function EmblaCarousel(props: EmblaCarouselProps, ref: Ref<unknown>) {
 		fade = false,
 		className,
 		children,
+		onUpdatePrev,
+		onUpdateNext,
+		onUpdateIndex,
+		onUpdateSnaps,
 	} = props;
 
 	// Store
@@ -185,12 +116,23 @@ function EmblaCarousel(props: EmblaCarouselProps, ref: Ref<unknown>) {
 		select(index);
 	};
 
+	// Effects
+	useEffect(() => {
+		onUpdatePrev && onUpdatePrev(prevBtnDisabled);
+	}, [prevBtnDisabled, onUpdatePrev]);
+	useEffect(() => {
+		onUpdateNext && onUpdateNext(nextBtnDisabled);
+	}, [nextBtnDisabled, onUpdateNext]);
+	useEffect(() => {
+		onUpdateIndex && onUpdateIndex(selectedIndex);
+	}, [selectedIndex, onUpdateIndex]);
+	useEffect(() => {
+		onUpdateSnaps && onUpdateSnaps(scrollSnaps);
+	}, [scrollSnaps, onUpdateSnaps]);
+
 	// Imperative handle
 	useImperativeHandle(ref, () => ({
-		prevBtnDisabled,
-		nextBtnDisabled,
-		selectedIndex,
-		scrollSnaps,
+		emblaApi,
 		prev: handlePrevButtonClick,
 		next: handleNextButtonClick,
 		select: handleDotButtonClick,
@@ -250,6 +192,7 @@ function EmblaCarousel(props: EmblaCarouselProps, ref: Ref<unknown>) {
 							{scrollSnaps.map((_, s) => (
 								<EmblaCarouselDotButton
 									key={`dot-${s}`}
+									idx={s}
 									isActive={s === selectedIndex}
 									onClick={() => handleDotButtonClick(s)}
 								/>

@@ -55,8 +55,8 @@ export default function App() {
 				title="Carousel Custom"
 				copy={`
 					<p>The custom carousel references certain functions and properties exposed by the EmblaCarousel component</p>
-					<p>Arrows and Dots are completely custom</p>
 					<p>A custom hook calculates the 'slidesToShow' and 'slideSpacing' based on window width</p>
+					<p>Arrows and Dots are completely custom</p>
 				`}
 				slides={[
 					{

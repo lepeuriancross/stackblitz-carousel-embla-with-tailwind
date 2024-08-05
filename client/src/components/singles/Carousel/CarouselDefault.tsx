@@ -24,7 +24,6 @@ export default function CarouselDefault(props: CarouselDefaultProps) {
 			{...{
 				arrows: true,
 				dots: true,
-				loop: true,
 				fade: true,
 			}}
 		>

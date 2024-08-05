@@ -39,19 +39,19 @@ export default function SectionCarousel(props: SectionCarouselProps) {
 	if (component === 'custom')
 		return (
 			<div className={classNames('section even:bg-gray-50', className)}>
-				<div className="section__container px-6 py-20 space-y-10 md:px-8">
-					<div className="section__row container mx-auto space-y-6 text-center">
+				<div className="section__container relative px-6 py-20 space-y-10 md:px-8">
+					<div className="section__row mx-auto space-y-8 text-center md:pr-40 md:text-left">
 						{title && (
 							<h2 className="section__title text-4xl font-bold">{title}</h2>
 						)}
 						{copy && (
 							<div
-								className="section__copy space-y-1"
+								className="section__copy space-y-3"
 								dangerouslySetInnerHTML={{ __html: copy }}
 							/>
 						)}
 					</div>
-					<div className="section__row container mx-auto">
+					<div className="section__row mx-auto">
 						{slides && slides.length > 0 && (
 							<CarouselCustom>
 								{slides.map((slide, s) => (
@@ -68,20 +68,20 @@ export default function SectionCarousel(props: SectionCarouselProps) {
 	return (
 		<div className={classNames('section even:bg-gray-50', className)}>
 			<div className="section__container px-6 py-20 space-y-10 md:px-8">
-				<div className="section__row container mx-auto space-y-6 text-center">
+				<div className="section__row container mx-auto space-y-8 text-center">
 					{title && (
 						<h2 className="section__title text-4xl font-bold">{title}</h2>
 					)}
 					{copy && (
 						<div
-							className="section__copy space-y-1"
+							className="section__copy space-y-3"
 							dangerouslySetInnerHTML={{ __html: copy }}
 						/>
 					)}
 				</div>
 				<div className="section__row container mx-auto">
 					{slides && slides.length > 0 && (
-						<CarouselDefault>
+						<CarouselDefault className="max-w-screen-sm mx-auto">
 							{slides.map((slide, s) => (
 								<SectionCarouselSlide key={`slide-${s}`} {...slide} />
 							))}
